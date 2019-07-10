@@ -7,7 +7,7 @@
  * with this source code in the file LICENSE.
  */
 
-namespace kail520/wx;
+namespace kail520\wx;
 
 use kail520\wx\core\Exception;
 use Yii;
