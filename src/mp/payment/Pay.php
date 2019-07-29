@@ -201,6 +201,17 @@ class Pay extends Driver {
     }
 
     /**
+     * H5支付
+     * @param array $attributes
+     * @return object
+     * @throws Exception
+     */
+    public function h5($attributes = []){
+        $attributes['trade_type'] = 'MWEB';
+        $result = $this->prepare($attributes);
+        return $result;
+    }
+    /**
      * 获得支付结果通知的对象
      * @return Notify
      */
