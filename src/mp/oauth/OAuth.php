@@ -56,23 +56,18 @@ class OAuth extends Driver {
         if($this->accessToken){
             return $this->accessToken;
         }
-
         $code = $this->getCode();
         $url = self::API_ACCESS_TOKEN_URL."?appid={$this->conf['app_id']}&secret={$this->conf['secret']}&code={$code}&grant_type=authorization_code";
-
         $response = $this->get($url)->send();
         if($response->isOk == false){
             throw new Exception(self::ERROR_NO_RESPONSE);
         }
-
         $response->setFormat(Client::FORMAT_JSON);
         $data = $response->getData();
         if(isset($data['errcode']) && $data['errcode'] != 0){
             throw new Exception($data['errmsg'], $data['errcode']);
         }
-
         $data = $response->getData();
-
         $this->accessToken = $data['access_token'];
         $this->openId = $data['openid'];
     }
@@ -85,9 +80,7 @@ class OAuth extends Driver {
         if($this->openId){
             return $this->openId;
         }
-
         $this->initAccessToken();
-
         return $this->openId;
     }
 
@@ -95,20 +88,17 @@ class OAuth extends Driver {
         if($this->code == false){
             $this->code = Yii::$app->request->get('code');
         }
-
         return $this->code;
     }
 
     /**
      * 通过web授权的access_token获得用户信息
-     *
      * @return mixed
      * @throws Exception
      */
     public function user(){
         $this->initAccessToken();
         $url = self::API_USER_INFO_URL."?access_token={$this->accessToken}&openid={$this->openId}&lang=zh_CN";
-
         $response = $this->get($url)->send();
         if($response->isOk == false){
             throw new Exception(self::ERROR_NO_RESPONSE);
@@ -118,8 +108,6 @@ class OAuth extends Driver {
         if(isset($data['errcode']) && $data['errcode'] != 0){
             throw new Exception($data['errmsg'], $data['errcode']);
         }
-
-
         return $data;
     }
 
