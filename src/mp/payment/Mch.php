@@ -19,7 +19,8 @@ use kail520\wx\helpers\Util;
  * 企业付款接口
  *
  */
-class Mch extends Driver {
+class Mch extends Driver
+{
 
     const API_SEND_URL = 'https://api.mch.weixin.qq.com/mmpaymkttransfers/promotion/transfers';
     const API_QUERY_URL = 'https://api.mch.weixin.qq.com/mmpaymkttransfers/gettransferinfo';
@@ -28,42 +29,43 @@ class Mch extends Driver {
      * 发送企业付款到零钱包
      *
      * @param $params array 付款参数（必填参数为partner_trade_no、openid、amount、desc、check_name）
-     * @throws Exception
      * @return array
+     * @throws Exception
      */
-    public function send($params = []){
+    public function send($params = [])
+    {
         $conf = [
-            'mch_appid'=>$this->conf['app_id'],
-            'mchid'=>$this->conf['payment']['mch_id'],
-            'spbill_create_ip'=>Yii::$app->request->userIP,
-            'nonce_str'=>Yii::$app->security->generateRandomString(32)
+            'mch_appid' => $this->conf['app_id'],
+            'mchid' => $this->conf['payment']['mch_id'],
+            'spbill_create_ip' => (!isset($params['spbill_create_ip'])) ? Yii::$app->request->userIP : $params['spbill_create_ip'],
+            'nonce_str' => Yii::$app->security->generateRandomString(32)
         ];
-        $params = array_merge($params,$conf);
-        $params['sign'] = Util::makeSign($params,$this->conf['payment']['key']);
+        $params = array_merge($params, $conf);
+        $params['sign'] = Util::makeSign($params, $this->conf['payment']['key']);
 
         $options = [
-            CURLOPT_SSLCERTTYPE=>'PEM',
-            CURLOPT_SSLCERT=>$this->conf['payment']['cert_path'],
-            CURLOPT_SSLKEYTYPE=>'PEM',
-            CURLOPT_SSLKEY=>$this->conf['payment']['key_path'],
+            CURLOPT_SSLCERTTYPE => 'PEM',
+            CURLOPT_SSLCERT => $this->conf['payment']['cert_path'],
+            CURLOPT_SSLKEYTYPE => 'PEM',
+            CURLOPT_SSLKEY => $this->conf['payment']['key_path'],
         ];
 
-        $response = $this->post(self::API_SEND_URL,$params,[],$options)
+        $response = $this->post(self::API_SEND_URL, $params, [], $options)
             ->setFormat(Client::FORMAT_XML)->send();
 
-        if($response->isOk == false){
+        if ($response->isOk == false) {
             throw new Exception(self::ERROR_NO_RESPONSE);
         }
 
         $response->setFormat(Client::FORMAT_XML);
         $result = $response->getData();
 
-        if($result['return_code'] == 'FAIL'){
+        if ($result['return_code'] == 'FAIL') {
             throw new Exception($result['return_msg']);
         }
 
-        if($result['result_code'] == 'FAIL'){
-            throw new Exception($result['err_code']."#".$result['err_code_des']);
+        if ($result['result_code'] == 'FAIL') {
+            throw new Exception($result['err_code'] . "#" . $result['err_code_des']);
         }
 
         return $result;
@@ -77,37 +79,38 @@ class Mch extends Driver {
      * @return array
      * @throws Exception
      */
-    public function query($partnerTradeNo){
+    public function query($partnerTradeNo)
+    {
         $params = [
-            'appid'=>$this->conf['app_id'],
-            'mch_id'=>$this->conf['payment']['mch_id'],
-            'partner_trade_no'=>$partnerTradeNo,
-            'nonce_str'=>Yii::$app->security->generateRandomString(32)
+            'appid' => $this->conf['app_id'],
+            'mch_id' => $this->conf['payment']['mch_id'],
+            'partner_trade_no' => $partnerTradeNo,
+            'nonce_str' => Yii::$app->security->generateRandomString(32)
         ];
-        $params['sign'] = Util::makeSign($params,$this->conf['payment']['key']);
+        $params['sign'] = Util::makeSign($params, $this->conf['payment']['key']);
 
         $options = [
-            CURLOPT_SSLCERTTYPE=>'PEM',
-            CURLOPT_SSLCERT=>$this->conf['payment']['cert_path'],
-            CURLOPT_SSLKEYTYPE=>'PEM',
-            CURLOPT_SSLKEY=>$this->conf['payment']['key_path'],
+            CURLOPT_SSLCERTTYPE => 'PEM',
+            CURLOPT_SSLCERT => $this->conf['payment']['cert_path'],
+            CURLOPT_SSLKEYTYPE => 'PEM',
+            CURLOPT_SSLKEY => $this->conf['payment']['key_path'],
         ];
 
-        $response = $this->post(self::API_QUERY_URL,$params,[],$options)->setFormat(Client::FORMAT_XML)->send();
+        $response = $this->post(self::API_QUERY_URL, $params, [], $options)->setFormat(Client::FORMAT_XML)->send();
 
-        if($response->isOk == false){
+        if ($response->isOk == false) {
             throw new Exception(self::ERROR_NO_RESPONSE);
         }
 
         $response->setFormat(Client::FORMAT_XML);
         $result = $response->getData();
 
-        if($result['return_code'] == 'FAIL'){
+        if ($result['return_code'] == 'FAIL') {
             throw new Exception($result['return_msg']);
         }
 
-        if($result['result_code'] == 'FAIL'){
-            throw new Exception($result['err_code']."#".$result['err_code_des']);
+        if ($result['result_code'] == 'FAIL') {
+            throw new Exception($result['err_code'] . "#" . $result['err_code_des']);
         }
 
         return $result;
