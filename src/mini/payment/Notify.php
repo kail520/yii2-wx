@@ -10,62 +10,45 @@ namespace kail520\wx\mini\payment;
 
 use kail520\wx\core\Exception;
 use kail520\wx\helpers\Util;
+use kail520\wx\helpers\Xml;
+use yii\base\Component;
 
 /**
  * Notify API.
  */
-class Notify {
+class Notify extends Component
+{
 
     /**
-     * @var $notify
+     * 收到的通知（数组形式）
+     * @var
      */
     protected $notify;
 
-    /**
-     * @var
-     */
-    protected $merchant;
+    public $merchant;
 
-    /**
-     * @var boolean | array
-     */
     protected $data = false;
 
-    public function __construct($merchant){
-        $this->merchant = $merchant;
-    }
-
-    public function getData(){
-        if($this->data){
+    public function getData()
+    {
+        if ($this->data) {
             return $this->data;
         }
 
-        $xml = @$GLOBALS['HTTP_RAW_POST_DATA'];
-        if(!$xml){
-        	$xml = file_get_contents("php://input");
-        }
-        $xmlArray = json_decode(json_encode(simplexml_load_string($xml, 'SimpleXMLElement', LIBXML_NOCDATA)), true);
-
-        return $this->data = $xmlArray;
+        return $this->data = Xml::parse(file_get_contents('php://input'));
     }
 
-    /**
-     * 检测签名
-     */
-    public function checkSign(){
-        if($this->data == false){
+    public function checkSign()
+    {
+        if ($this->data == false) {
             $this->getData();
         }
 
-        $sign = Util::makeSign($this->data,$this->merchant['key']);
-        if($this->GetSign() == $sign){
-            return true;
+        $sign = Util::makeSign($this->data, $this->merchant['key']);
+        if ($sign != $this->data['sign']) {
+            throw new Exception("签名错误！");
         }
-        throw new Exception("签名错误！");
-    }
 
-    public function GetSign(){
-        return $this->data['sign'];
+        return true;
     }
-
 }
